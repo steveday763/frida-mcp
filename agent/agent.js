@@ -305,62 +305,6 @@ rpc.exports = {
         return bytes;
     },
 
-    // Get Akamai signal from Tc.I.e()
-    getAkamaiSignal() {
-        if (!Java.available) {
-            throw new Error("Java runtime not available");
-        }
-        let signal = null;
-        Java.performNow(() => {
-            try {
-                const I = Java.use('Tc.I');
-                // Get all instances on heap and call e() on first one
-                Java.choose('Tc.I', {
-                    onMatch: (instance) => {
-                        signal = instance.e();
-                        return 'stop';
-                    },
-                    onComplete: () => {}
-                });
-            } catch(e) {
-                signal = "Error: " + e.message;
-            }
-        });
-        return signal;
-    },
-
-    // Bypass Akamai debug detection
-    bypassAkamaiDebug() {
-        if (!Java.available) {
-            throw new Error("Java runtime not available");
-        }
-        let result = [];
-        Java.performNow(() => {
-            try {
-                const TcU = Java.use('Tc.U');
-
-                // Override isDebugEnabled to return "false"
-                TcU.isDebugEnabled.implementation = function() {
-                    send('[HOOK] Tc.U.isDebugEnabled() -> "false" (bypassed)');
-                    return "false";
-                };
-                result.push("isDebugEnabled: bypassed");
-
-                // Override adbStatus to return "0"
-                TcU.adbStatus.implementation = function() {
-                    send('[HOOK] Tc.U.adbStatus() -> "0" (bypassed)');
-                    return "0";
-                };
-                result.push("adbStatus: bypassed");
-
-                send('[+] Akamai debug bypass installed');
-            } catch(e) {
-                result.push("Error: " + e.message);
-            }
-        });
-        return result;
-    },
-
     // Run arbitrary code within Java.performNow context
     // Code should set `result` variable to return a value
     runJava(code) {
@@ -478,4 +422,4 @@ rpc.exports = {
     }
 };
 
-send('[+] objection-mcp agent loaded (with frida-java-bridge)');
+send('[+] frida-mcp agent loaded');

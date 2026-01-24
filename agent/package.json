@@ -1,5 +1,5 @@
 {
-  "name": "objection-agent",
+  "name": "frida-mcp-agent",
   "version": "1.0.0",
   "scripts": {
     "build": "frida-compile -S -c agent.js -o _agent.js",
@@ -10,6 +10,6 @@
     "frida-compile": "^16.0.0"
   },
   "dependencies": {
-    "frida-java-bridge": "file:/Users/cbass/Code/frida-java-bridge"
+    "frida-java-bridge": "^6.0.0"
   }
 }
