@@ -11,11 +11,16 @@ def get_agent_source() -> str:
     if _agent_source_cache is not None:
         return _agent_source_cache
 
-    possible_paths = [
+    # Check env var first, then relative paths
+    possible_paths = []
+
+    if env_path := os.environ.get("FRIDA_MCP_AGENT_PATH"):
+        possible_paths.append(env_path)
+
+    possible_paths.extend([
         os.path.join(os.path.dirname(__file__), '..', '..', 'agent', '_agent.js'),
         os.path.join(os.path.dirname(__file__), 'agent', '_agent.js'),
-        '/Users/cbass/Code/frida-mcp/agent/_agent.js',
-    ]
+    ])
 
     for p in possible_paths:
         if os.path.exists(p):
@@ -24,5 +29,6 @@ def get_agent_source() -> str:
             return _agent_source_cache
 
     raise FileNotFoundError(
-        "Compiled agent not found. Run 'npm run build' in the agent/ directory."
+        "Compiled agent not found. Run 'npm run build' in the agent/ directory, "
+        "or set FRIDA_MCP_AGENT_PATH environment variable."
     )
