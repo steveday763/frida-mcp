@@ -24,6 +24,8 @@ npm install
 npm run build
 ```
 
+The compiled agent now bundles `frida-java-bridge` via npm and should be rebuilt after changing anything under [`agent/`](./agent).
+
 ## Add to Claude Code
 
 ```bash
@@ -117,5 +119,27 @@ claude mcp add frida-mcp -- frida-mcp
 ## Notes
 
 - SELinux is automatically set to permissive mode when connecting (required for Frida injection on many devices)
-- The `spawn=true` option uses ADB-based launch which is more reliable than Frida's native spawn
+- `connect(..., spawn=true)` and `spawn_and_attach` now prefer Frida's native `spawn -> attach -> load agent -> resume` flow, and fall back to ADB launch if native spawn is unavailable
+- Agent bootstrap waits for the compiled script to report readiness before exposing RPC exports, which avoids transient session initialization failures on Android
+- The active session keeps the main agent script alive for the lifetime of the connection
+- On Windows, ADB output and the compiled agent source are decoded as UTF-8 to avoid locale-dependent failures
 - Multi-session support allows attaching to multiple apps/devices simultaneously
+
+## Android Notes
+
+- When `pidof` returns multiple PIDs for one package, connection logic retries and waits for a stable attach target instead of assuming the first PID is correct
+- `memory_read` returns a lowercase hex string and uses a bulk `readByteArray()` path internally, which is significantly faster than byte-by-byte reads for larger ranges
+- Java-backed tools such as `android_*` and `file_*` require the compiled agent in [`agent/_agent.js`](./agent/_agent.js) to be up to date
+
+## Troubleshooting
+
+- If Java tools fail unexpectedly, rebuild the agent:
+
+```bash
+cd agent
+npm install
+npm run build
+```
+
+- If MCP is using a custom launcher, point `FRIDA_MCP_AGENT_PATH` at the compiled [`agent/_agent.js`](./agent/_agent.js)
+- If Android attach works intermittently on fresh launches, prefer `spawn=true` or `spawn_and_attach` over launching the app externally and attaching later
