@@ -28,6 +28,7 @@ class FridaSession:
     id: str
     device: frida.core.Device
     session: frida.core.Session
+    script: Any | None
     api: Any  # RPC exports
     target: str
     pid: int
@@ -87,6 +88,11 @@ class FridaSession:
                 pass
         self.persistent_scripts = []
         try:
+            if self.script is not None:
+                self.script.unload()
+        except Exception:
+            pass
+        try:
             self.session.detach()
         except Exception:
             pass
@@ -101,13 +107,14 @@ class SessionRegistry:
         self._lock = RLock()
 
     def create(self, device: frida.core.Device, session: frida.core.Session,
-               api: Any, target: str, pid: int) -> FridaSession:
+               script: Any | None, api: Any, target: str, pid: int) -> FridaSession:
         """Create and register a new session, making it active."""
         session_id = str(uuid.uuid4())[:8]
         fs = FridaSession(
             id=session_id,
             device=device,
             session=session,
+            script=script,
             api=api,
             target=target,
             pid=pid,

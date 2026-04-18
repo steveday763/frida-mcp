@@ -24,7 +24,7 @@ def get_agent_source() -> str:
 
     for p in possible_paths:
         if os.path.exists(p):
-            with open(p, 'r') as f:
+            with open(p, 'r', encoding='utf-8') as f:
                 _agent_source_cache = f.read()
             return _agent_source_cache
 

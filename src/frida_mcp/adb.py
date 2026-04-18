@@ -4,14 +4,21 @@ import subprocess
 import time as time_module
 
 
+def _run_adb(args: list[str]) -> str:
+    """Run adb and decode output robustly on Windows."""
+    result = subprocess.run(args, capture_output=True)
+    if result.stdout:
+        return result.stdout.decode("utf-8", errors="replace").strip()
+    return ""
+
+
 def adb_shell(cmd: list[str], device_id: str | None = None) -> str:
     """Run adb shell command and return output."""
     args = ["adb"]
     if device_id:
         args.extend(["-s", device_id])
     args.extend(["shell"] + cmd)
-    result = subprocess.run(args, capture_output=True, text=True)
-    return result.stdout.strip()
+    return _run_adb(args)
 
 
 def adb_cmd(cmd: list[str], device_id: str | None = None) -> str:
@@ -20,8 +27,7 @@ def adb_cmd(cmd: list[str], device_id: str | None = None) -> str:
     if device_id:
         args.extend(["-s", device_id])
     args.extend(cmd)
-    result = subprocess.run(args, capture_output=True, text=True)
-    return result.stdout.strip()
+    return _run_adb(args)
 
 
 def ensure_selinux_permissive(device_id: str | None = None) -> str:

@@ -10,6 +10,6 @@
     "frida-compile": "^16.0.0"
   },
   "dependencies": {
-    "frida-java-bridge": "^6.0.0"
+    "frida-java-bridge": "^7.0.13"
   }
 }
