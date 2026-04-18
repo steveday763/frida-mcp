@@ -49,14 +49,16 @@ rpc.exports = {
     },
 
     memoryRead(address, size) {
-        const addr = ptr(address);
+        const bytes = new Uint8Array(ptr(address).readByteArray(size));
         const hex = '0123456789abcdef';
-        let out = '';
-        for (let i = 0; i < size; i++) {
-            const b = addr.add(i).readU8();
-            out += hex[(b >> 4) & 0xf] + hex[b & 0xf];
+        const chars = new Array(bytes.length * 2);
+        let j = 0;
+        for (let i = 0; i < bytes.length; i++) {
+            const b = bytes[i];
+            chars[j++] = hex[(b >> 4) & 0xf];
+            chars[j++] = hex[b & 0xf];
         }
-        return out;
+        return chars.join('');
     },
 
     // Android/Java hooking
